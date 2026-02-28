@@ -14,6 +14,21 @@ import java.util.Optional;
 
 @Service
 public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistrationService {
+    @Override
+    @Transactional
+    public MedicalStoreRegistrationResponse resetPassword(modal.PasswordResetRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+        Optional<modal.MedicalStoreRegistrationRequest> storeOpt = medicalStoreRegistrationDao.findByEmailAndStoreMobile(request.getEmail(), request.getStoreMobile());
+        if (storeOpt.isEmpty()) {
+            throw new IllegalArgumentException("Store not found with provided email and storeMobile");
+        }
+        modal.MedicalStoreRegistrationRequest store = storeOpt.get();
+        store.setPassword(request.getPassword());
+        medicalStoreRegistrationDao.save(store);
+        return toResponse(store);
+    }
 
     private final MedicalStoreRegistrationDao medicalStoreRegistrationDao;
 
@@ -114,5 +129,61 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
 
     private String nonNull(String value) {
         return value == null ? "" : value;
+    }
+       @Override
+    @Transactional
+    public MedicalStoreRegistrationResponse patchMedicalStore(Long storeId, modal.MedicalStorePatchRequest request) {
+        MedicalStoreRegistrationRequest existingStore = medicalStoreRegistrationDao.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Medical store not found"));
+
+        boolean anyFieldUpdated = false;
+
+        if (request.getOwnerName() != null) {
+            existingStore.setOwnerName(request.getOwnerName());
+            anyFieldUpdated = true;
+        }
+        if (request.getStoreName() != null) {
+            existingStore.setStoreName(request.getStoreName());
+            anyFieldUpdated = true;
+        }
+        if (request.getStoreMobile() != null) {
+            existingStore.setStoreMobile(request.getStoreMobile());
+            anyFieldUpdated = true;
+        }
+        if (request.getMobile() != null) {
+            existingStore.setMobile(request.getMobile());
+            anyFieldUpdated = true;
+        }
+        if (request.getEmail() != null) {
+            existingStore.setEmail(request.getEmail());
+            anyFieldUpdated = true;
+        }
+        if (request.getLicenseNo() != null) {
+            existingStore.setLicenseNo(request.getLicenseNo());
+            anyFieldUpdated = true;
+        }
+        if (request.getGstinNumber() != null) {
+            existingStore.setGstinNumber(request.getGstinNumber());
+            anyFieldUpdated = true;
+        }
+        if (request.getPharmacyCode() != null) {
+            existingStore.setPharmacyCode(request.getPharmacyCode());
+            anyFieldUpdated = true;
+        }
+        if (request.getAddress() != null) {
+            existingStore.setAddress(request.getAddress());
+            anyFieldUpdated = true;
+        }
+        if (request.getPassword() != null) {
+            existingStore.setPassword(request.getPassword());
+            anyFieldUpdated = true;
+        }
+
+        if (!anyFieldUpdated) {
+            throw new IllegalArgumentException("At least one field must be provided");
+        }
+
+        MedicalStoreRegistrationRequest updatedStore = medicalStoreRegistrationDao.save(existingStore);
+        return toResponse(updatedStore);
     }
 }

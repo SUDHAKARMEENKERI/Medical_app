@@ -1,3 +1,4 @@
+
 package controller;
 
 import jakarta.validation.Valid;
@@ -21,6 +22,16 @@ import java.util.List;
 @RequestMapping("/api/medical-store")
 @CrossOrigin(origins = "*")
 public class MedicalStoreRegistrationController {
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody modal.PasswordResetRequest request) {
+        try {
+            MedicalStoreRegistrationResponse response = medicalStoreRegistrationService.resetPassword(request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
 
     private final MedicalStoreRegistrationService medicalStoreRegistrationService;
     private final CustomerService customerService;
@@ -86,5 +97,16 @@ public class MedicalStoreRegistrationController {
             @RequestParam(required = true) String email) {
         List<CustomerResponse> response = customerService.getAllCustomers(storeId, storeMobile, email);
         return ResponseEntity.ok(response);
+    }
+    @PatchMapping("/patch/{storeId}")
+    public ResponseEntity<?> patchMedicalStore(
+            @PathVariable Long storeId,
+            @RequestBody modal.MedicalStorePatchRequest request) {
+        try {
+            MedicalStoreRegistrationResponse response = medicalStoreRegistrationService.patchMedicalStore(storeId, request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 }

@@ -34,19 +34,58 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerRequest existingCustomer = customerDao.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        if (request.getSpent() == null && request.getVisited() == null) {
-            throw new IllegalArgumentException("At least one field (spent or visited) must be provided");
-        }
+        boolean anyFieldUpdated = false;
 
-        if (request.getSpent() != null && request.getSpent().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("spent cannot be negative");
+        if (request.getName() != null) {
+            existingCustomer.setName(request.getName());
+            anyFieldUpdated = true;
         }
-
+        if (request.getStoreId() != null) {
+            existingCustomer.setStoreId(request.getStoreId());
+            anyFieldUpdated = true;
+        }
+        if (request.getPhone() != null) {
+            existingCustomer.setPhone(request.getPhone());
+            anyFieldUpdated = true;
+        }
+        if (request.getStoreMobile() != null) {
+            existingCustomer.setStoreMobile(request.getStoreMobile());
+            anyFieldUpdated = true;
+        }
+        if (request.getEmail() != null) {
+            existingCustomer.setEmail(request.getEmail());
+            anyFieldUpdated = true;
+        }
+        if (request.getGender() != null) {
+            existingCustomer.setGender(request.getGender());
+            anyFieldUpdated = true;
+        }
+        if (request.getAge() != null) {
+            existingCustomer.setAge(request.getAge());
+            anyFieldUpdated = true;
+        }
+        if (request.getDoctorName() != null) {
+            existingCustomer.setDoctorName(request.getDoctorName());
+            anyFieldUpdated = true;
+        }
+        if (request.getReferredBy() != null) {
+            existingCustomer.setReferredBy(request.getReferredBy());
+            anyFieldUpdated = true;
+        }
         if (request.getSpent() != null) {
+            if (request.getSpent().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("spent cannot be negative");
+            }
             existingCustomer.setSpent(request.getSpent());
+            anyFieldUpdated = true;
         }
         if (request.getVisited() != null) {
             existingCustomer.setVisited(request.getVisited());
+            anyFieldUpdated = true;
+        }
+
+        if (!anyFieldUpdated) {
+            throw new IllegalArgumentException("At least one field must be provided");
         }
 
         CustomerRequest updatedCustomer = customerDao.save(existingCustomer);

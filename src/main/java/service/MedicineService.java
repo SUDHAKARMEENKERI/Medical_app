@@ -10,4 +10,8 @@ public interface MedicineService {
     MedicineResponse addMedicine(MedicineRequest request);
 
     List<MedicineResponse> getAllMedicines(Long storeId, String storeMobile, String email);
+
+    List<MedicineResponse> bulkUploadMedicines(List<MedicineRequest> requests);
+
+    void bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile);
 }

@@ -9,9 +9,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CustomerPatchRequest {
-
+    private String name;
+    private Long storeId;
+    private String phone;
+    private String storeMobile;
+    private String email;
+    private String gender;
+    private String age;
+    private String doctorName;
+    private String referredBy;
     private BigDecimal spent;
     private LocalDate visited;
-
     // Lombok @Getter and @Setter used
 }

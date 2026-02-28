@@ -68,6 +68,21 @@ public class MedicineRequest {
     @Email
     private String email;
 
+    private String formulation;
+    private String strength;
+    private String mfgDate;
+    private String packSize;
+    private String boxQuantity;
+    private String lowAlert;
+    private String rackShelf;
+    private String buyPrice;
+    private String boxBuyPrice;
+    private String boxSellPrice;
+    private String gst;
+    private String manufacturer;
+    private String supplier;
+    private String batchSize;
+
     public Long getId() {
         return id;
     }
@@ -163,4 +178,33 @@ public class MedicineRequest {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getFormulation() { return formulation; }
+    public void setFormulation(String formulation) { this.formulation = formulation; }
+    public String getStrength() { return strength; }
+    public void setStrength(String strength) { this.strength = strength; }
+    public String getMfgDate() { return mfgDate; }
+    public void setMfgDate(String mfgDate) { this.mfgDate = mfgDate; }
+    public String getPackSize() { return packSize; }
+    public void setPackSize(String packSize) { this.packSize = packSize; }
+    public String getBoxQuantity() { return boxQuantity; }
+    public void setBoxQuantity(String boxQuantity) { this.boxQuantity = boxQuantity; }
+    public String getLowAlert() { return lowAlert; }
+    public void setLowAlert(String lowAlert) { this.lowAlert = lowAlert; }
+    public String getRackShelf() { return rackShelf; }
+    public void setRackShelf(String rackShelf) { this.rackShelf = rackShelf; }
+    public String getBuyPrice() { return buyPrice; }
+    public void setBuyPrice(String buyPrice) { this.buyPrice = buyPrice; }
+    public String getBoxBuyPrice() { return boxBuyPrice; }
+    public void setBoxBuyPrice(String boxBuyPrice) { this.boxBuyPrice = boxBuyPrice; }
+    public String getBoxSellPrice() { return boxSellPrice; }
+    public void setBoxSellPrice(String boxSellPrice) { this.boxSellPrice = boxSellPrice; }
+    public String getGst() { return gst; }
+    public void setGst(String gst) { this.gst = gst; }
+    public String getManufacturer() { return manufacturer; }
+    public void setManufacturer(String manufacturer) { this.manufacturer = manufacturer; }
+    public String getSupplier() { return supplier; }
+    public void setSupplier(String supplier) { this.supplier = supplier; }
+    public String getBatchSize() { return batchSize; }
+    public void setBatchSize(String batchSize) { this.batchSize = batchSize; }
 }

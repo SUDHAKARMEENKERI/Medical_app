@@ -14,4 +14,6 @@ public interface MedicalStoreRegistrationDao extends JpaRepository<MedicalStoreR
     boolean existsByLicenseNo(String licenseNo);
 
     Optional<MedicalStoreRegistrationRequest> findByStoreMobile(String storeMobile);
+
+    Optional<MedicalStoreRegistrationRequest> findByEmailAndStoreMobile(String email, String storeMobile);
 }

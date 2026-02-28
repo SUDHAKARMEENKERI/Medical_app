@@ -14,4 +14,9 @@ public interface MedicalStoreRegistrationService {
     List<MedicalStoreRegistrationResponse> getAllMedicalStores();
 
     MedicalStoreLoginResponse loginMedicalStore(MedicalStoreLoginRequest request);
+
+    MedicalStoreRegistrationResponse patchMedicalStore(Long storeId, modal.MedicalStorePatchRequest request);
+
+    // Password reset API
+    MedicalStoreRegistrationResponse resetPassword(modal.PasswordResetRequest request);
 }

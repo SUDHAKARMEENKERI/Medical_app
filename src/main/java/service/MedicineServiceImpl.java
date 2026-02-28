@@ -1,9 +1,12 @@
+
 package service;
 
 import dao.MedicineDao;
 import modal.MedicineRequest;
 import modal.MedicineResponse;
 import org.springframework.stereotype.Service;
+
+import Helper.ExcelMedicineHelper;
 
 import java.util.List;
 
@@ -30,6 +33,12 @@ public class MedicineServiceImpl implements MedicineService {
                 .toList();
     }
 
+    @Override
+    public List<MedicineResponse> bulkUploadMedicines(List<MedicineRequest> requests) {
+        List<MedicineRequest> savedMedicines = medicineDao.saveAll(requests.stream().peek(r -> r.setId(null)).toList());
+        return savedMedicines.stream().map(this::toResponse).toList();
+    }
+
     private MedicineResponse toResponse(MedicineRequest medicine) {
         MedicineResponse response = new MedicineResponse();
         response.setId(medicine.getId());
@@ -53,5 +62,18 @@ public class MedicineServiceImpl implements MedicineService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    @Override
+    public void bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile) {
+        if (excelFile.isEmpty()) {
+            throw new RuntimeException("Excel file is empty");
+        }
+        try {
+            List<MedicineRequest> list = ExcelMedicineHelper.parse(excelFile.getInputStream());
+            medicineDao.saveAll(list.stream().peek(r -> r.setId(null)).toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Bulk upload failed: " + e.getMessage(), e);
+        }
     }
 }
