@@ -68,8 +68,20 @@ public class MedicineController {
     }
 
     @PostMapping(value = "/bulkUploadExcel", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, String> bulkUploadExcel(@RequestParam("file") MultipartFile excel) {
-        medicineService.bulkUploadExcel(excel);
-        return Map.of("Result", "Bulk upload successful");
+    public ResponseEntity<Map<String, String>> bulkUploadExcel(@RequestParam("file") MultipartFile excel) {
+        try {
+            int uploadedCount = medicineService.bulkUploadExcel(excel);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Bulk upload successful",
+                    "uploadedCount", String.valueOf(uploadedCount)
+            ));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "fail",
+                    "message", ex.getMessage(),
+                    "uploadedCount", "0"
+            ));
+        }
     }
 }

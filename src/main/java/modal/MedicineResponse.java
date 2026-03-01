@@ -22,6 +22,20 @@ public class MedicineResponse {
     private String storeMobile;
     private Long storeId;
     private String email;
+    private String formulation;
+    private String strength;
+    private String mfgDate;
+    private String packSize;
+    private String boxQuantity;
+    private String lowAlert;
+    private String rackShelf;
+    private String buyPrice;
+    private String boxBuyPrice;
+    private String boxSellPrice;
+    private String gst;
+    private String manufacturer;
+    private String supplier;
+    private String batchSize;
 
     // Lombok @Getter and @Setter used
 }

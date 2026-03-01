@@ -13,5 +13,5 @@ public interface MedicineService {
 
     List<MedicineResponse> bulkUploadMedicines(List<MedicineRequest> requests);
 
-    void bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile);
+    int bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile);
 }

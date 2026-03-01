@@ -53,6 +53,20 @@ public class MedicineServiceImpl implements MedicineService {
         response.setStoreMobile(medicine.getStoreMobile());
         response.setStoreId(medicine.getStoreId());
         response.setEmail(medicine.getEmail());
+        response.setFormulation(medicine.getFormulation());
+        response.setStrength(medicine.getStrength());
+        response.setMfgDate(medicine.getMfgDate());
+        response.setPackSize(medicine.getPackSize());
+        response.setBoxQuantity(medicine.getBoxQuantity());
+        response.setLowAlert(medicine.getLowAlert());
+        response.setRackShelf(medicine.getRackShelf());
+        response.setBuyPrice(medicine.getBuyPrice());
+        response.setBoxBuyPrice(medicine.getBoxBuyPrice());
+        response.setBoxSellPrice(medicine.getBoxSellPrice());
+        response.setGst(medicine.getGst());
+        response.setManufacturer(medicine.getManufacturer());
+        response.setSupplier(medicine.getSupplier());
+        response.setBatchSize(medicine.getBatchSize());
         return response;
     }
 
@@ -65,13 +79,17 @@ public class MedicineServiceImpl implements MedicineService {
     }
 
     @Override
-    public void bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile) {
+    public int bulkUploadExcel(org.springframework.web.multipart.MultipartFile excelFile) {
         if (excelFile.isEmpty()) {
-            throw new RuntimeException("Excel file is empty");
+            throw new RuntimeException("Upload file is empty");
         }
         try {
-            List<MedicineRequest> list = ExcelMedicineHelper.parse(excelFile.getInputStream());
-            medicineDao.saveAll(list.stream().peek(r -> r.setId(null)).toList());
+            List<MedicineRequest> list = ExcelMedicineHelper.parse(
+                    excelFile.getInputStream(),
+                    excelFile.getOriginalFilename(),
+                    excelFile.getContentType());
+            List<MedicineRequest> saved = medicineDao.saveAll(list.stream().peek(r -> r.setId(null)).toList());
+            return saved.size();
         } catch (Exception e) {
             throw new RuntimeException("Bulk upload failed: " + e.getMessage(), e);
         }
