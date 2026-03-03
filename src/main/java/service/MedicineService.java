@@ -1,6 +1,7 @@
 package service;
 
 import modal.MedicineRequest;
+import modal.MedicinePatchRequest;
 import modal.MedicineResponse;
 
 import java.util.List;
@@ -8,6 +9,10 @@ import java.util.List;
 public interface MedicineService {
 
     MedicineResponse addMedicine(MedicineRequest request);
+
+    MedicineResponse patchMedicine(Long medicineId, MedicinePatchRequest request);
+
+    void deleteMedicine(Long medicineId);
 
     List<MedicineResponse> getAllMedicines(Long storeId, String storeMobile, String email);
 

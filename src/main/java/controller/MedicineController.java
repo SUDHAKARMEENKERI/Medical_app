@@ -2,6 +2,7 @@ package controller;
 
 import jakarta.validation.Valid;
 import modal.MedicineRequest;
+import modal.MedicinePatchRequest;
 import modal.MedicineResponse;
 import modal.BillingRequest;
 import modal.BillingResponse;
@@ -9,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +44,28 @@ public class MedicineController {
     public ResponseEntity<MedicineResponse> addMedicine(@Valid @RequestBody MedicineRequest request) {
         MedicineResponse response = medicineService.addMedicine(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{medicineId}")
+    public ResponseEntity<?> patchMedicine(
+            @PathVariable Long medicineId,
+            @RequestBody MedicinePatchRequest request) {
+        try {
+            MedicineResponse response = medicineService.patchMedicine(medicineId, request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{medicineId}")
+    public ResponseEntity<?> deleteMedicine(@PathVariable Long medicineId) {
+        try {
+            medicineService.deleteMedicine(medicineId);
+            return ResponseEntity.ok(Map.of("message", "Medicine deleted successfully"));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 
     @GetMapping("/all")

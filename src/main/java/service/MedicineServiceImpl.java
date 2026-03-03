@@ -2,12 +2,14 @@
 package service;
 
 import dao.MedicineDao;
+import modal.MedicinePatchRequest;
 import modal.MedicineRequest;
 import modal.MedicineResponse;
 import org.springframework.stereotype.Service;
 
 import Helper.ExcelMedicineHelper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -24,6 +26,135 @@ public class MedicineServiceImpl implements MedicineService {
         request.setId(null);
         MedicineRequest savedMedicine = medicineDao.save(request);
         return toResponse(savedMedicine);
+    }
+
+    @Override
+    public MedicineResponse patchMedicine(Long medicineId, MedicinePatchRequest request) {
+        MedicineRequest existingMedicine = medicineDao.findById(medicineId)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found"));
+
+        boolean anyFieldUpdated = false;
+
+        if (request.getName() != null) {
+            existingMedicine.setName(request.getName());
+            anyFieldUpdated = true;
+        }
+        if (request.getBrand() != null) {
+            existingMedicine.setBrand(request.getBrand());
+            anyFieldUpdated = true;
+        }
+        if (request.getComposition() != null) {
+            existingMedicine.setComposition(request.getComposition());
+            anyFieldUpdated = true;
+        }
+        if (request.getCategory() != null) {
+            existingMedicine.setCategory(request.getCategory());
+            anyFieldUpdated = true;
+        }
+        if (request.getBatch() != null) {
+            existingMedicine.setBatch(request.getBatch());
+            anyFieldUpdated = true;
+        }
+        if (request.getExpiry() != null) {
+            existingMedicine.setExpiry(request.getExpiry());
+            anyFieldUpdated = true;
+        }
+        if (request.getQuantity() != null) {
+            if (request.getQuantity() < 0) {
+                throw new IllegalArgumentException("quantity must be 0 or greater");
+            }
+            existingMedicine.setQuantity(request.getQuantity());
+            anyFieldUpdated = true;
+        }
+        if (request.getPrice() != null) {
+            if (request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("price must be 0 or greater");
+            }
+            existingMedicine.setPrice(request.getPrice());
+            anyFieldUpdated = true;
+        }
+        if (request.getStoreMobile() != null) {
+            existingMedicine.setStoreMobile(request.getStoreMobile());
+            anyFieldUpdated = true;
+        }
+        if (request.getStoreId() != null) {
+            existingMedicine.setStoreId(request.getStoreId());
+            anyFieldUpdated = true;
+        }
+        if (request.getEmail() != null) {
+            existingMedicine.setEmail(request.getEmail());
+            anyFieldUpdated = true;
+        }
+        if (request.getFormulation() != null) {
+            existingMedicine.setFormulation(request.getFormulation());
+            anyFieldUpdated = true;
+        }
+        if (request.getStrength() != null) {
+            existingMedicine.setStrength(request.getStrength());
+            anyFieldUpdated = true;
+        }
+        if (request.getMfgDate() != null) {
+            existingMedicine.setMfgDate(request.getMfgDate());
+            anyFieldUpdated = true;
+        }
+        if (request.getPackSize() != null) {
+            existingMedicine.setPackSize(request.getPackSize());
+            anyFieldUpdated = true;
+        }
+        if (request.getBoxQuantity() != null) {
+            existingMedicine.setBoxQuantity(request.getBoxQuantity());
+            anyFieldUpdated = true;
+        }
+        if (request.getLowAlert() != null) {
+            existingMedicine.setLowAlert(request.getLowAlert());
+            anyFieldUpdated = true;
+        }
+        if (request.getRackShelf() != null) {
+            existingMedicine.setRackShelf(request.getRackShelf());
+            anyFieldUpdated = true;
+        }
+        if (request.getBuyPrice() != null) {
+            existingMedicine.setBuyPrice(request.getBuyPrice());
+            anyFieldUpdated = true;
+        }
+        if (request.getBoxBuyPrice() != null) {
+            existingMedicine.setBoxBuyPrice(request.getBoxBuyPrice());
+            anyFieldUpdated = true;
+        }
+        if (request.getBoxSellPrice() != null) {
+            existingMedicine.setBoxSellPrice(request.getBoxSellPrice());
+            anyFieldUpdated = true;
+        }
+        if (request.getGst() != null) {
+            existingMedicine.setGst(request.getGst());
+            anyFieldUpdated = true;
+        }
+        if (request.getManufacturer() != null) {
+            existingMedicine.setManufacturer(request.getManufacturer());
+            anyFieldUpdated = true;
+        }
+        if (request.getSupplier() != null) {
+            existingMedicine.setSupplier(request.getSupplier());
+            anyFieldUpdated = true;
+        }
+        if (request.getBatchSize() != null) {
+            existingMedicine.setBatchSize(request.getBatchSize());
+            anyFieldUpdated = true;
+        }
+
+        if (!anyFieldUpdated) {
+            throw new IllegalArgumentException("At least one field must be provided");
+        }
+
+        MedicineRequest updatedMedicine = medicineDao.save(existingMedicine);
+        return toResponse(updatedMedicine);
+    }
+
+    @Override
+    public void deleteMedicine(Long medicineId) {
+        MedicineRequest existingMedicine = medicineDao.findById(medicineId)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found"));
+        medicineDao.delete(existingMedicine);
     }
 
     @Override
