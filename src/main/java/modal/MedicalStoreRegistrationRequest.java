@@ -1,6 +1,7 @@
 package modal;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -70,6 +71,10 @@ public class MedicalStoreRegistrationRequest {
 
     @Transient
     private Boolean agreeTerms;
+
+    @Column(name = "billed", nullable = false, columnDefinition = "boolean default false")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Boolean billed = false;
 
     public Long getId() {
         return id;
@@ -185,6 +190,14 @@ public class MedicalStoreRegistrationRequest {
         this.agreeTerms = agreeTerms;
     }
 
+    public Boolean getBilled() {
+        return billed;
+    }
+
+    public void setBilled(Boolean billed) {
+        this.billed = billed;
+    }
+
     @PrePersist
     @PreUpdate
     private void syncMobileColumns() {
@@ -193,6 +206,9 @@ public class MedicalStoreRegistrationRequest {
         }
         if (isBlank(mobile) && !isBlank(storeMobile)) {
             mobile = storeMobile;
+        }
+        if (billed == null) {
+            billed = false;
         }
     }
 

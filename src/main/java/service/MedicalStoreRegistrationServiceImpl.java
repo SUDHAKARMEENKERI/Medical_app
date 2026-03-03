@@ -56,6 +56,7 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
         }
 
         request.setId(null);
+        request.setBilled(false);
         MedicalStoreRegistrationRequest savedStore = medicalStoreRegistrationDao.save(request);
 
         return toResponse(savedStore);
@@ -95,9 +96,21 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
                 && !nonNull(medicalStore.getRole()).equalsIgnoreCase(loginAs)) {
             throw new IllegalArgumentException("Invalid role for this account");
         }
+        if (!Boolean.TRUE.equals(medicalStore.getBilled())) {
+            MedicalStoreLoginResponse response = new MedicalStoreLoginResponse();
+            response.setMessage("Please complete billing first to access login");
+            response.setAccessAllowed(false);
+            response.setLoginAs(loginAs);
+            response.setStoreId(medicalStore.getId());
+            response.setStoreName(medicalStore.getStoreName());
+            response.setOwnerName(medicalStore.getOwnerName());
+            response.setStoreMobile(medicalStore.getStoreMobile());
+            return response;
+        }
 
         MedicalStoreLoginResponse response = new MedicalStoreLoginResponse();
         response.setMessage("Login successful");
+        response.setAccessAllowed(true);
         response.setLoginAs(loginAs);
         response.setStoreId(medicalStore.getId());
         response.setStoreName(medicalStore.getStoreName());
@@ -124,6 +137,7 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
         response.setGstinNumber(nonNull(request.getGstinNumber()));
         response.setPharmacyCode(nonNull(request.getPharmacyCode()));
         response.setAddress(nonNull(request.getAddress()));
+        response.setBilled(Boolean.TRUE.equals(request.getBilled()));
         return response;
     }
 

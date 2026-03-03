@@ -8,6 +8,7 @@ import lombok.Setter;
 public class MedicalStoreLoginResponse {
 
     private String message;
+    private Boolean accessAllowed;
     private String loginAs;
     private Long storeId;
     private String storeName;

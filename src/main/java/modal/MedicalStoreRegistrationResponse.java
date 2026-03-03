@@ -17,6 +17,7 @@ public class MedicalStoreRegistrationResponse {
     private String gstinNumber;
     private String pharmacyCode;
     private String address;
+    private Boolean billed;
 
     // Lombok @Getter and @Setter used
 }
