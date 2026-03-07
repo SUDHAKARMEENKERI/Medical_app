@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/medical-store")
@@ -60,6 +61,21 @@ public class MedicalStoreRegistrationController {
     public ResponseEntity<List<MedicalStoreRegistrationResponse>> getAllMedicalStores() {
         List<MedicalStoreRegistrationResponse> medicalStores = medicalStoreRegistrationService.getAllMedicalStores();
         return ResponseEntity.ok(medicalStores);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<?> getMedicalStoreDetails(
+            @RequestParam(required = true) String email,
+            @RequestParam(required = true) String mobile) {
+        try {
+            MedicalStoreRegistrationResponse response = medicalStoreRegistrationService
+                    .getMedicalStoreDetails(email, mobile);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        } catch (NoSuchElementException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+        }
     }
 
     @PostMapping("/login")

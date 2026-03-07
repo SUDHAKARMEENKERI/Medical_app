@@ -6,14 +6,30 @@ import modal.MedicalStoreLoginRequest;
 import modal.MedicalStoreLoginResponse;
 import modal.MedicalStoreRegistrationRequest;
 import modal.MedicalStoreRegistrationResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import service.security.JwtService;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
 public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistrationService {
+    private final MedicalStoreRegistrationDao medicalStoreRegistrationDao;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    public MedicalStoreRegistrationServiceImpl(
+            MedicalStoreRegistrationDao medicalStoreRegistrationDao,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
+        this.medicalStoreRegistrationDao = medicalStoreRegistrationDao;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
+
     @Override
     @Transactional
     public MedicalStoreRegistrationResponse resetPassword(modal.PasswordResetRequest request) {
@@ -25,15 +41,9 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
             throw new IllegalArgumentException("Store not found with provided email and storeMobile");
         }
         modal.MedicalStoreRegistrationRequest store = storeOpt.get();
-        store.setPassword(request.getPassword());
+        store.setPassword(passwordEncoder.encode(request.getPassword()));
         medicalStoreRegistrationDao.save(store);
         return toResponse(store);
-    }
-
-    private final MedicalStoreRegistrationDao medicalStoreRegistrationDao;
-
-    public MedicalStoreRegistrationServiceImpl(MedicalStoreRegistrationDao medicalStoreRegistrationDao) {
-        this.medicalStoreRegistrationDao = medicalStoreRegistrationDao;
     }
 
     @Override
@@ -57,6 +67,7 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
 
         request.setId(null);
         request.setBilled(false);
+    request.setPassword(passwordEncoder.encode(request.getPassword()));
         MedicalStoreRegistrationRequest savedStore = medicalStoreRegistrationDao.save(request);
 
         return toResponse(savedStore);
@@ -68,26 +79,52 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
     }
 
     @Override
+    public MedicalStoreRegistrationResponse getMedicalStoreDetails(String email, String mobile) {
+        String normalizedEmail = nonNull(email).trim();
+        String normalizedMobile = nonNull(mobile).trim();
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (normalizedMobile.isBlank()) {
+            throw new IllegalArgumentException("Mobile is required");
+        }
+
+        MedicalStoreRegistrationRequest medicalStore = medicalStoreRegistrationDao
+                .findByEmailAndAnyMobile(normalizedEmail, normalizedMobile)
+                .orElseThrow(() -> new NoSuchElementException("Medical store not found"));
+
+        return toResponse(medicalStore);
+    }
+
+    @Override
+    @Transactional
     public MedicalStoreLoginResponse loginMedicalStore(MedicalStoreLoginRequest request) {
         String loginAs = request.getLoginAs().trim().toLowerCase(Locale.ROOT);
+        String identifier = request.getStoreMobileOrStoreId().trim();
         if (!"owner".equals(loginAs) && !"staff".equals(loginAs)) {
             throw new IllegalArgumentException("loginAs must be either owner or staff");
         }
 
         Optional<MedicalStoreRegistrationRequest> storeByStoreMobile = medicalStoreRegistrationDao
-            .findByStoreMobile(request.getStoreMobileOrStoreId());
+            .findByStoreMobile(identifier);
 
-        Optional<MedicalStoreRegistrationRequest> store = storeByStoreMobile;
+        Optional<MedicalStoreRegistrationRequest> storeByMobile = Optional.empty();
+        if (storeByStoreMobile.isEmpty()) {
+            storeByMobile = medicalStoreRegistrationDao.findByMobile(identifier);
+        }
+
+        Optional<MedicalStoreRegistrationRequest> store = storeByStoreMobile.isPresent() ? storeByStoreMobile : storeByMobile;
         if (store.isEmpty()) {
             try {
-                Long storeId = Long.parseLong(request.getStoreMobileOrStoreId());
+                Long storeId = Long.parseLong(identifier);
                 store = medicalStoreRegistrationDao.findById(storeId);
             } catch (NumberFormatException ignored) {
                 store = Optional.empty();
             }
         }
 
-        if (store.isEmpty() || !store.get().getPassword().equals(request.getPassword())) {
+        if (store.isEmpty() || !passwordMatches(request.getPassword(), store.get())) {
             throw new IllegalArgumentException("Invalid storeMobile/storeId or password");
         }
 
@@ -97,31 +134,13 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
             throw new IllegalArgumentException("Invalid role for this account");
         }
         if (!Boolean.TRUE.equals(medicalStore.getBilled())) {
-            MedicalStoreLoginResponse response = new MedicalStoreLoginResponse();
-            response.setMessage("Please complete billing first to access login");
-            response.setAccessAllowed(false);
-            response.setLoginAs(loginAs);
-            response.setStoreId(medicalStore.getId());
-            response.setStoreName(medicalStore.getStoreName());
-            response.setOwnerName(medicalStore.getOwnerName());
-            response.setStoreMobile(medicalStore.getStoreMobile());
-            return response;
+            throw new IllegalArgumentException("Please complete billing first to access login");
         }
 
         MedicalStoreLoginResponse response = new MedicalStoreLoginResponse();
-        response.setMessage("Login successful");
-        response.setAccessAllowed(true);
-        response.setLoginAs(loginAs);
-        response.setStoreId(medicalStore.getId());
-        response.setStoreName(medicalStore.getStoreName());
-        response.setOwnerName(medicalStore.getOwnerName());
-        response.setStoreMobile(medicalStore.getStoreMobile());
-        response.setEmail(nonNull(medicalStore.getEmail()));
-        response.setLicenseNo(nonNull(medicalStore.getLicenseNo()));
-        response.setRole(nonNull(medicalStore.getRole()));
-        response.setGstinNumber(nonNull(medicalStore.getGstinNumber()));
-        response.setPharmacyCode(nonNull(medicalStore.getPharmacyCode()));
-        response.setAddress(nonNull(medicalStore.getAddress()));
+        String token = jwtService.generateToken(medicalStore, loginAs);
+        response.setToken(token);
+        response.setTokenType("Bearer");
         return response;
     }
 
@@ -131,6 +150,7 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
         response.setOwnerName(request.getOwnerName());
         response.setStoreName(request.getStoreName());
         response.setStoreMobile(nonNull(request.getStoreMobile()));
+        response.setMobile(nonNull(request.getMobile()));
         response.setEmail(nonNull(request.getEmail()));
         response.setLicenseNo(nonNull(request.getLicenseNo()));
         response.setRole(nonNull(request.getRole()));
@@ -144,6 +164,26 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
     private String nonNull(String value) {
         return value == null ? "" : value;
     }
+
+    private boolean passwordMatches(String rawPassword, MedicalStoreRegistrationRequest store) {
+        String storedPassword = store.getPassword();
+        if (storedPassword == null || storedPassword.isBlank()) {
+            return false;
+        }
+
+        if (passwordEncoder.matches(rawPassword, storedPassword)) {
+            return true;
+        }
+
+        if (rawPassword.equals(storedPassword)) {
+            store.setPassword(passwordEncoder.encode(rawPassword));
+            medicalStoreRegistrationDao.save(store);
+            return true;
+        }
+
+        return false;
+    }
+
        @Override
     @Transactional
     public MedicalStoreRegistrationResponse patchMedicalStore(Long storeId, modal.MedicalStorePatchRequest request) {
@@ -189,7 +229,7 @@ public class MedicalStoreRegistrationServiceImpl implements MedicalStoreRegistra
             anyFieldUpdated = true;
         }
         if (request.getPassword() != null) {
-            existingStore.setPassword(request.getPassword());
+            existingStore.setPassword(passwordEncoder.encode(request.getPassword()));
             anyFieldUpdated = true;
         }
 

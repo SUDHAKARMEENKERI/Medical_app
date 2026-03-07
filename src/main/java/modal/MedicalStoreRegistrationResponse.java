@@ -11,6 +11,7 @@ public class MedicalStoreRegistrationResponse {
     private String ownerName;
     private String storeName;
     private String storeMobile;
+    private String mobile;
     private String email;
     private String licenseNo;
     private String role;

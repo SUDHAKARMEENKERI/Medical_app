@@ -13,6 +13,8 @@ public interface MedicalStoreRegistrationService {
 
     List<MedicalStoreRegistrationResponse> getAllMedicalStores();
 
+    MedicalStoreRegistrationResponse getMedicalStoreDetails(String email, String mobile);
+
     MedicalStoreLoginResponse loginMedicalStore(MedicalStoreLoginRequest request);
 
     MedicalStoreRegistrationResponse patchMedicalStore(Long storeId, modal.MedicalStorePatchRequest request);
